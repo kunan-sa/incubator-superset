@@ -28,12 +28,10 @@ import os
 import sys
 from collections import OrderedDict
 from datetime import date
-from typing import Any, Callable, Dict, List, Optional, Type, TYPE_CHECKING
+from typing import Any, Callable, Dict, List, Optional, TYPE_CHECKING
 
-from cachelib.base import BaseCache
 from celery.schedules import crontab
 from dateutil import tz
-from flask import Blueprint
 from flask_appbuilder.security.manager import AUTH_DB
 
 from superset.jinja_context import (  # pylint: disable=unused-import
@@ -80,7 +78,7 @@ PACKAGE_JSON_FILE = os.path.join(BASE_DIR, "static", "assets", "package.json")
 FAVICONS = [{"href": "/static/assets/images/favicon.png"}]
 
 
-def _try_json_readversion(filepath: str) -> Optional[str]:
+def _try_json_readversion(filepath):
     try:
         with open(filepath, "r") as f:
             return json.load(f).get("version")
@@ -88,9 +86,7 @@ def _try_json_readversion(filepath: str) -> Optional[str]:
         return None
 
 
-def _try_json_readsha(  # pylint: disable=unused-argument
-    filepath: str, length: int
-) -> Optional[str]:
+def _try_json_readsha(filepath, length):  # pylint: disable=unused-argument
     try:
         with open(filepath, "r") as f:
             return json.load(f).get("GIT_SHA")[:length]
@@ -113,8 +109,6 @@ VERSION_SHA = _try_json_readsha(VERSION_INFO_FILE, VERSION_SHA_LENGTH)
 
 ROW_LIMIT = 50000
 VIZ_ROW_LIMIT = 10000
-# max rows retreieved when requesting samples from datasource in explore view
-SAMPLES_ROW_LIMIT = 1000
 # max rows retrieved by filter select auto complete
 FILTER_SELECT_ROW_LIMIT = 10000
 SUPERSET_WORKERS = 2  # deprecated
@@ -129,14 +123,6 @@ SUPERSET_WEBSERVER_PORT = 8088
 # You should also make sure to configure your WSGI server
 # (gunicorn, nginx, apache, ...) timeout setting to be <= to this setting
 SUPERSET_WEBSERVER_TIMEOUT = 60
-
-# this 2 settings are used by dashboard period force refresh feature
-# When user choose auto force refresh frequency
-# < SUPERSET_DASHBOARD_PERIODICAL_REFRESH_LIMIT
-# they will see warning message in the Refresh Interval Modal.
-# please check PR #9886
-SUPERSET_DASHBOARD_PERIODICAL_REFRESH_LIMIT = 0
-SUPERSET_DASHBOARD_PERIODICAL_REFRESH_WARNING_MESSAGE = None
 
 SUPERSET_DASHBOARD_POSITION_DATA_LIMIT = 65535
 CUSTOM_SECURITY_MANAGER = None
@@ -293,7 +279,7 @@ LANGUAGES = {
 # For example, DEFAULT_FEATURE_FLAGS = { 'FOO': True, 'BAR': False } here
 # and FEATURE_FLAGS = { 'BAR': True, 'BAZ': True } in superset_config.py
 # will result in combined feature flags of { 'FOO': True, 'BAR': True, 'BAZ': True }
-DEFAULT_FEATURE_FLAGS: Dict[str, bool] = {
+DEFAULT_FEATURE_FLAGS = {
     # Experimental feature introducing a client (browser) cache
     "CLIENT_CACHE": False,
     "ENABLE_EXPLORE_JSON_CSRF_PROTECTION": False,
@@ -422,7 +408,7 @@ DEFAULT_MODULE_DS_MAP = OrderedDict(
     ]
 )
 ADDITIONAL_MODULE_DS_MAP: Dict[str, List[str]] = {}
-ADDITIONAL_MIDDLEWARE: List[Callable[..., Any]] = []
+ADDITIONAL_MIDDLEWARE: List[Callable] = []
 
 # 1) https://docs.python-guide.org/writing/logging/
 # 2) https://docs.python.org/2/library/logging.config.html
@@ -457,7 +443,6 @@ BACKUP_COUNT = 30
 #     user=None,
 #     client=None,
 #     security_manager=None,
-#     log_params=None,
 # ):
 #     pass
 QUERY_LOGGER = None
@@ -583,9 +568,10 @@ SQLLAB_CTAS_SCHEMA_NAME_FUNC: Optional[
     Callable[["Database", "models.User", str, str], str]
 ] = None
 
-# If enabled, it can be used to store the results of long-running queries
+# An instantiated derivative of cachelib.base.BaseCache
+# if enabled, it can be used to store the results of long-running queries
 # in SQL Lab by using the "Run Async" button/feature
-RESULTS_BACKEND: Optional[BaseCache] = None
+RESULTS_BACKEND = None
 
 # Use PyArrow and MessagePack for async query results serialization,
 # rather than JSON. This feature requires additional testing from the
@@ -608,7 +594,7 @@ CSV_TO_HIVE_UPLOAD_DIRECTORY_FUNC: Callable[
 
 # The namespace within hive where the tables created from
 # uploading CSVs will be stored.
-UPLOADED_CSV_HIVE_NAMESPACE: Optional[str] = None
+UPLOADED_CSV_HIVE_NAMESPACE = None
 
 # Function that computes the allowed schemas for the CSV uploads.
 # Allowed schemas will be a union of schemas_allowed_for_csv_upload
@@ -618,21 +604,21 @@ UPLOADED_CSV_HIVE_NAMESPACE: Optional[str] = None
 ALLOWED_USER_CSV_SCHEMA_FUNC: Callable[
     ["Database", "models.User"], List[str]
 ] = lambda database, user: [
-    UPLOADED_CSV_HIVE_NAMESPACE
+    UPLOADED_CSV_HIVE_NAMESPACE  # type: ignore
 ] if UPLOADED_CSV_HIVE_NAMESPACE else []
 
 # A dictionary of items that gets merged into the Jinja context for
 # SQL Lab. The existing context gets updated with this dictionary,
 # meaning values for existing keys get overwritten by the content of this
 # dictionary.
-JINJA_CONTEXT_ADDONS: Dict[str, Callable[..., Any]] = {}
+JINJA_CONTEXT_ADDONS: Dict[str, Callable] = {}
 
 # A dictionary of macro template processors that gets merged into global
 # template processors. The existing template processors get updated with this
 # dictionary, which means the existing keys get overwritten by the content of this
 # dictionary. The customized addons don't necessarily need to use jinjia templating
 # language. This allows you to define custom logic to process macro template.
-CUSTOM_TEMPLATE_PROCESSORS: Dict[str, Type[BaseTemplateProcessor]] = {}
+CUSTOM_TEMPLATE_PROCESSORS = {}  # type: Dict[str, BaseTemplateProcessor]
 
 # Roles that are controlled by the API / Superset and should not be changes
 # by humans.
@@ -685,7 +671,7 @@ PERMISSION_INSTRUCTIONS_LINK = ""
 
 # Integrate external Blueprints to the app by passing them to your
 # configuration. These blueprints will get integrated in the app
-BLUEPRINTS: List[Blueprint] = []
+BLUEPRINTS: List[Callable] = []
 
 # Provide a callable that receives a tracking_url and returns another
 # URL. This is used to translate internal Hadoop job tracker URL
@@ -836,9 +822,9 @@ ENABLE_ROW_LEVEL_SECURITY = False
 # See https://flask.palletsprojects.com/en/1.1.x/security/#set-cookie-options
 # for details
 #
-SESSION_COOKIE_HTTPONLY = True  # Prevent cookie from being read by frontend JS?
+SESSION_COOKIE_HTTPONLY = False  # Prevent cookie from being read by frontend JS?
 SESSION_COOKIE_SECURE = False  # Prevent cookie from being transmitted over non-tls?
-SESSION_COOKIE_SAMESITE = "Lax"  # One of [None, 'Lax', 'Strict']
+SESSION_COOKIE_SAMESITE = None  # One of [None, 'Lax', 'Strict']
 
 # Flask configuration variables
 SEND_FILE_MAX_AGE_DEFAULT = 60 * 60 * 24 * 365  # Cache static resources
@@ -871,6 +857,18 @@ SIP_15_TOAST_MESSAGE = (
     'new time range endpoints <a target="_blank" href="{url}" '
     'class="alert-link">here</a>.'
 )
+#mine
+#let's add our custom security manager
+from superset.security.security import CustomSecurityManager
+CUSTOM_SECURITY_MANAGER = CustomSecurityManager
+# let's set a default dashboard for all users
+DASHBOARD_TEMPLATE_ID = 4
+
+# if DASHBOARD_TEMPLATE_ID is set, a copy of the
+# dashboard will be created and then he/she will
+# be redirected to it.
+# Otherwise, he/she will be redirected to the welcome page.
+DEFAULT_WELCOME_DASHBOARD = '/superset/dashboard/births'
 
 if CONFIG_PATH_ENV_VAR in os.environ:
     # Explicitly import config module that is not necessarily in pythonpath; useful
@@ -898,3 +896,6 @@ elif importlib.util.find_spec("superset_config"):
     except Exception:
         logger.exception("Found but failed to import local superset_config")
         raise
+
+LOGIN_WITH_TOKEN = True
+TOKEN_API_URL = "http://localhost:5000/"
