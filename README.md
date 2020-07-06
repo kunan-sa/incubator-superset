@@ -16,7 +16,7 @@ KIND, either express or implied.  See the License for the
 specific language governing permissions and limitations
 under the License.
 -->
-Superset
+Superset: Login through token
 =========
 
 <img
@@ -25,7 +25,6 @@ Superset
   width="500"
 />
 
-#Login through token
 
 ## Introduction
 In this branch of the fork Superset was modified in order to implement
