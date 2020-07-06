@@ -43,12 +43,17 @@ through params, for example:
 ```
 in order to do this, an api must be running and its endpoint must be added
 to the **superset/config.py** file.
+
 We provide an example api, to show how such api would look like.
 
 ### Modified files
-* superset/security/__init__.py
-* superset/config.py
+* `superset/security/__init__.py`
+* `superset/config.py`
 
 ### Added files
-* login-api/api.py
-* superset/security/security.py
+* `login-api/api.py`
+* `superset/security/security.py`
+
+## Installation
+In order to run this, superset must be installed as a development env.
+Please follow the [official documentation](https://github.com/apache/incubator-superset/blob/master/CONTRIBUTING.md#flask-server)
